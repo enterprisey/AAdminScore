@@ -1,11 +1,20 @@
-from flask import Flask, render_template, request
+from bottle import route, request, run, static_file, template
+import os
 
-app = Flask(__name__)
+HOST = "0.0.0.0"
+DEFAULT_PORT = 5000
 
-@app.route("/")
-def main():
-    return render_template("aadminscore.html",
-                           user=request.args.get("user", ""))
+@route("/")
+def index():
+    user = request.query.user or ""
+    return template("aadminscore",
+                    user=user)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+@route('/static/<filename:path>')
+def send_static(filename):
+    return static_file(filename,
+                       root='static')
+
+run(host=HOST,
+    port=int(os.environ.get("PORT", DEFAULT_PORT)),
+    reloader=True)

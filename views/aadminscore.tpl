@@ -7,21 +7,22 @@
     <link href="../static/css/aadminscore.css" rel="stylesheet" />
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
     <script src="../static/js/aadminscore.js"></script>
-    {% if user %}
+    % if defined("user"):
     <script>
       $(document).ready(function(){$("#submit").trigger("click")});
     </script>
-    {% endif %}
+    % end
   </head>
   <body>
     <h1>Asynchronous Admin Score</h1>
     <label for="username">Username:</label>
     <input type="text" id="username" class="mw-ui-input mw-ui-input-inline"
-           {% if user %}
+           % if defined("user"):
            value="{{ user }}"
-           {% endif %}/>
+           % end
+           />
     <button id="submit" class="mw-ui-button mw-ui-constructive">
       Submit
     </button>
