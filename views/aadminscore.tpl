@@ -18,10 +18,10 @@
   <body>
     <h1>Asynchronous Admin Score</h1>
     <label for="username">Username:</label>
-    <input type="text" id="username" class="mw-ui-input mw-ui-input-inline"
-           % if defined("user") and get("user"):\\
-           value="{{ user }}"
-           % end\\
+    <input type="text" id="username" class="mw-ui-input mw-ui-input-inline"\\
+           % if defined("user") and get("user"):
+           value="{{ user }}"\\
+           % end
            />
     <button id="submit" class="mw-ui-button mw-ui-constructive">
       Submit
