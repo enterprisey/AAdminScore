@@ -6,7 +6,7 @@ DEFAULT_PORT = 5000
 
 @route("/")
 def index():
-    user = request.query.user or ""
+    user = request.query.user
     return template("aadminscore",
                     user=user)
 
