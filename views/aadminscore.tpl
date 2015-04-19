@@ -6,7 +6,7 @@
     <link href="../static/css/mw.css" rel="stylesheet" />
     <link href="../static/css/aadminscore.css" rel="stylesheet" />
 
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
     <script src="../static/js/aadminscore.js"></script>
     % if defined("user"):
