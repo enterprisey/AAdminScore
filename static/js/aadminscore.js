@@ -6,7 +6,7 @@ $( document ).ready( function () {
           ACCOUNT_AGE_MULTIPLIER = 1.25,
           ARTICLES_CREATED_MULTIPLIER = 1.4,
           ACTIVITY_MULTIPLIER = 0.9,
-          API_ROOT = "http://en.wikipedia.org/w/api.php",
+          API_ROOT = "https://en.wikipedia.org/w/api.php",
           API_SUFFIX = "&format=json&callback=?&continue=";
 
     var scoreComponents = {
