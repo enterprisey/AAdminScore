@@ -238,7 +238,8 @@ $( document ).ready( function () {
         }
         $( "#result" ).show();
         $( "#score_wrapper" )
-            .text( "Admin score for " + username + ": " )
+            .html( "Admin score for <a href='https://en.wikipedia.org/wiki/" +
+                   "User:" + username + "'>" + username + "</a>: " )
             .append( $( "<span>" )
                          .text( "0" )
                          .attr( "id", "score" ) );
