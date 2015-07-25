@@ -337,6 +337,7 @@ $( document ).ready( function () {
         var username = window.location.hash.replace( /^#user=/, "" );
         $( "#username" ).val( decodeURIComponent( username ) );
         $( "#submit" ).click();
+    }
 
     const MAIN_GRAPH_WIDTH = 500,
           MAX_MAIN_GRAPH_HEIGHT = 200,
