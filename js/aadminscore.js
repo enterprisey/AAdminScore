@@ -322,12 +322,21 @@ $( document ).ready( function () {
     // Bind form submission handler to submission button & username field
     $( "#submit" ).click( showScore );
     $( "#username" ).keyup( function ( e ) {
+
+        // Update the hash in the URL
+        window.location.hash = "#user=" + encodeURIComponent( $( this ).val() );
         if ( e.keyCode == 13 ) {
 
             // Enter was pressed in the username field
             showScore();
         }
     } );
+
+    // Allow user to be specified in hash in the form `#user=Example`
+    if ( window.location.hash ) {
+        var username = window.location.hash.replace( /^#user=/, "" );
+        $( "#username" ).val( decodeURIComponent( username ) );
+        $( "#submit" ).click();
 
     const MAIN_GRAPH_WIDTH = 500,
           MAX_MAIN_GRAPH_HEIGHT = 200,
