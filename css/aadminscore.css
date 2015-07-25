@@ -1,0 +1,55 @@
+body {
+    font-family: sans-serif;
+}
+
+h2 {
+    font-size: 120%;
+}
+
+#score {
+    font-size: larger;
+    font-weight: bold;
+}
+
+#score_wrapper {
+    background-color: #EEEEFF;
+    padding: 5px;
+    margin: 5px;
+    font-size: larger;
+    display: inline-block;
+}
+
+footer {
+    font-size: smaller;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.graph-axis path, .graph-axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.graph-axis text {
+    font-size: smaller;
+}
+
+text.bar-label {
+    font-family: sans-serif;
+    font-size: smaller;
+}
+
+rect.positive-delta {
+    fill: #00AF89;
+}
+
+rect.negative-delta {
+    fill: red;
+}
