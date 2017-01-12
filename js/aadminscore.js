@@ -238,29 +238,38 @@ $( document ).ready( function () {
         }
         $( "#result" ).show();
         $( "#score_wrapper" )
-            .html( "Admin score for <a href='https://en.wikipedia.org/wiki/" +
-                   "User:" + username + "'>" + username + "</a>: " )
+            .empty()
+            .append( "<span>Admin score for <a href='https://en.wikipedia.org/wiki/" +
+                     "User:" + username + "'>" + username + "</a>: </span>" )
             .append( $( "<span>" )
                          .text( "0" )
                          .attr( "id", "score" ) );
         $( "#components" ).empty();
+        $( "#components" ).append( "<tr><th>Component</th><th>Data</th><th>Score</th></tr>" );
         d3.selectAll( "svg" ).selectAll( "*" ).remove();
 
         $.each( scoreComponents, function ( name, functions ) {
+
+            // First, add our own table row to #components that we'll update
+            var componentRow = $( "<tr>" )
+                .appendTo( "#components" )
+                .append( "<td>" + name + "</td>" )
+                .append( "<td colspan='2' class='loading'>Loading...</td>" );
             var display = function ( metric ) {
                 var delta = functions.delta( metric.raw );
                 if ( name !== "Block status" || delta !== 0 ) {
 
-                    // The delta and name attributes are used for the d3 graph.
-                    $( "#components" ).append( $( "<li>" )
-                                            .attr( "delta", delta )
-                                            .attr( "name", name )
-                                            .addClass( "score_component" )
-                                            .append( name + ": " )
-                                            .append( metric.formatted )
-                                            .append( " (" )
-                                            .append( formatDelta( delta ) )
-                                            .append( ")" ) );
+                    // The d3 graph reads these attributes, so add them
+                    componentRow
+                        .attr( "delta", delta )
+                        .attr( "name", name )
+                        .addClass( "score_component" );
+
+                    componentRow.empty()
+                        .append( "<td>" + name + "</td><td>" +
+                                 metric.formatted + "</td><td>" +
+                                 formatDelta( delta ).prop( "outerHTML" ) +
+                                 "</td>" );
 
                     // Update the score element
                     var oldScore = parseFloat( $( "#score" )
@@ -273,8 +282,8 @@ $( document ).ready( function () {
 
                 // Another component has loaded, so update the graph
                 updateMainGraph();
-            },
-                urls = functions.url( username );
+            }; // End display() function
+            var urls = functions.url( username );
 
             //console.log( name + " -> " + JSON.stringify( urls ) );
 
@@ -322,9 +331,6 @@ $( document ).ready( function () {
     // Bind form submission handler to submission button & username field
     $( "#submit" ).click( showScore );
     $( "#username" ).keyup( function ( e ) {
-
-        // Update the hash in the URL
-        window.location.hash = "#user=" + encodeURIComponent( $( this ).val() );
         if ( e.keyCode == 13 ) {
 
             // Enter was pressed in the username field
@@ -332,11 +338,19 @@ $( document ).ready( function () {
         }
     } );
 
-    // Allow user to be specified in hash in the form `#user=Example`
-    if ( window.location.hash ) {
-        var username = window.location.hash.replace( /^#user=/, "" );
-        $( "#username" ).val( decodeURIComponent( username ) );
-        $( "#submit" ).click();
+    if ( window.location.hash && window.location.hash.indexOf( "#user=" ) >= 0 ) {
+
+        // In the past, we let the hash specify the user, like #user=Example
+        $( "#username" ).val( decodeURIComponent( window.location.hash.replace( /^#user=/, "" ) ) );
+        $( "#submit" ).trigger( "click" );
+    } else if( window.location.search.substring( 1 ).indexOf( "user=" ) >= 0 ) {
+
+        // Allow the user to be specified in the query string, like ?user=Example
+        var userArgMatch = /&?user=([^&#]*)/.exec( window.location.search.substring( 1 ) );
+        if( userArgMatch && userArgMatch[1] ) {
+            $( "#username" ).val( decodeURIComponent( userArgMatch[1].replace( /\+/g, " " ) ) );
+            $( "#submit" ).trigger( "click" );
+        }
     }
 
     const MAIN_GRAPH_WIDTH = 500,
@@ -348,6 +362,7 @@ $( document ).ready( function () {
 
     function updateMainGraph() {
         var runningTotals = [],
+            deltaSigns = [], // stores whether each component is + (true) or - (false)
             runningTotal = 0;
 
         $( ".score_component" ).each( function () {
@@ -358,6 +373,7 @@ $( document ).ready( function () {
             }
             runningTotal += delta;
             runningTotals.push( [ runningTotal, name ] );
+            deltaSigns.push( delta >= 0 );
         } );
 
         var bar_height = 20,
@@ -367,9 +383,12 @@ $( document ).ready( function () {
             preferredHeight = spacePaddingTakesUp + spaceBarsTakeUp;
             height = Math.min( MAX_MAIN_GRAPH_HEIGHT, preferredHeight );
 
+        var xExtent = d3.extent( runningTotals,
+                                 function ( d ) { return d[ 0 ]; } );
+        xExtent[ 0 ] = Math.min( 0, xExtent[ 0 ] );
+        xExtent[ 1 ] = Math.max( 0, xExtent[ 1 ] );
         var xScale = d3.scale.linear()
-            .domain( d3.extent( runningTotals,
-                                function ( d ) { return d[ 0 ]; } ) )
+            .domain( xExtent )
             .rangeRound( [ MAIN_GRAPH_PADDING,
                            MAIN_GRAPH_WIDTH - MAIN_GRAPH_PADDING * 2 ] );
 
@@ -394,7 +413,7 @@ $( document ).ready( function () {
             dToX = function ( d, i, xOff ) {
                 xOff = xOff || 0;
                 if ( i === 0 ) {
-                    return xOff;
+                    return Math.min( d[ 0 ], xScale( 0 ) ) + xOff;
                 } else {
                     var result = Math.min( d[ 0 ],
                                            runningTotals[ i - 1 ][ 0 ] ) + xOff;
@@ -403,11 +422,12 @@ $( document ).ready( function () {
             },
             dToWidth = function ( d, i ) {
                 if ( i === 0 ) {
-                    return d[ 0 ];
+                    return Math.abs( xScale( 0 ) - d[ 0 ] );
                 } else {
                     return Math.abs( d[ 0 ] - runningTotals[ i - 1 ][ 0 ] );
                 }
             };
+
         svg.selectAll( "rect" )
             .data( runningTotals )
             .enter()
@@ -421,14 +441,7 @@ $( document ).ready( function () {
                 return bar_height - MAIN_GRAPH_BAR_PADDING;
             } )
             .attr( "class", function ( d, i ) {
-                if ( i === 0 ) {
-                    return "positive-delta";
-                } else {
-                    var positiveDelta = d[ 0 ] -
-                        runningTotals[ i - 1 ][ 0 ] >= 0;
-                    return ( positiveDelta ? "positive" : "negative" ) +
-                        "-delta";
-                }
+                return ( deltaSigns[i] ? "positive" : "negative" ) + "-delta";
             } );
 
         svg.selectAll( "text" )

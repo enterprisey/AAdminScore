@@ -6,21 +6,36 @@ body {
     background-color: #F3F3F3;
 }
 
+h1, h2, h3 {
+    margin-bottom: 0.25em;
+}
+
 h2 {
     font-size: 120%;
 }
 
+nav {
+    font-size: 80%;
+}
+
 #score {
-    font-size: larger;
     font-weight: bold;
+    font-size: larger;
+    vertical-align: middle;
+}
+
+#score_wrapper span:not(#score) {
+    vertical-align: middle;
 }
 
 #score_wrapper {
-    background-color: #EEEEFF;
+    background-color: white;
+    /*vertical-align: bottom;*/
+    font-size: larger;
     padding: 5px;
     margin: 5px;
-    font-size: larger;
     display: inline-block;
+    border: thin solid black;
 }
 
 footer {
@@ -33,6 +48,10 @@ a {
 
 a:hover {
     text-decoration: underline;
+}
+
+svg {
+    overflow: visible;
 }
 
 .graph-axis path, .graph-axis line {
@@ -56,4 +75,18 @@ rect.positive-delta {
 
 rect.negative-delta {
     fill: red;
+}
+
+table {
+    background-color: white;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: thin solid black;
+    padding: 0.25em;
+}
+
+td.loading {
+    background-color: #EEE;
 }

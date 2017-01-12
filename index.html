@@ -5,13 +5,14 @@
     <title>Asynchronous Admin Score</title>
     <link href="css/mw.css" rel="stylesheet" />
     <link href="css/aadminscore.css" rel="stylesheet" />
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+    <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/d3/3.5.5/d3.min.js"></script>
     <script src="js/aadminscore.js"></script>
   </head>
   <body>
     <h1>Asynchronous Admin Score</h1>
+    <nav><a href="https://tools.wmflabs.org/apersonbot/">Tools</a> &gt; <b>Asynchronous Admin Score</b></nav>
+    <p>This tool grabs pertinent information about a user and generates an overall score designed to indicate that user's readiness for <a href="https://en.wikipedia.org/wiki/Wikipedia:Administrators">adminship</a>. It's been adapted from Scottywong's tool, which was named "Admin score".</p>
     <label for="username">Username:</label>
     <input type="text" id="username" class="mw-ui-input mw-ui-input-inline" />
     <button id="submit" class="mw-ui-button mw-ui-constructive">
@@ -25,7 +26,7 @@
       <h2>Score graph</h2>
       <svg></svg>
       <h2>Score components</h2>
-      <ul id="components"></ul>
+      <table id="components"></table>
     </output>
     <br />
     <footer>
