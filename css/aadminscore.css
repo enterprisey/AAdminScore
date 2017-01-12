@@ -1,5 +1,9 @@
 body {
-    font-family: sans-serif;
+    font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif;
+    color: #333;
+    max-width: 750px;
+    margin: 40px auto;
+    background-color: #F3F3F3;
 }
 
 h2 {
