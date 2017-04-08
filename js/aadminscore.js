@@ -6,6 +6,7 @@ $( document ).ready( function () {
           ACCOUNT_AGE_MULTIPLIER = 1.25,
           ARTICLES_CREATED_MULTIPLIER = 1.4,
           ACTIVITY_MULTIPLIER = 0.9,
+          CSD_LOG_MULTIPLIER = 0.9,
           API_ROOT = "https://en.wikipedia.org/w/api.php",
           API_SUFFIX = "&format=json&callback=?&continue=";
 
@@ -220,6 +221,78 @@ $( document ).ready( function () {
                     rawDelta = -50;
                 }
                 return ACTIVITY_MULTIPLIER * rawDelta;
+            }
+        },
+        "CSD log": {
+            url: function ( username ) {
+                return [ API_ROOT + "?action=parse&page=User:" + username + "/CSD_log" + API_SUFFIX ];
+            },
+            metric: function ( data ) {
+                if ( data.hasOwnProperty( "parse" ) ) {
+                    var html = data.parse.text[ "*" ];
+
+                    // Delete up to first section header in MMMMM YYYY format
+                    var firstDateSectionIndex = -1;
+                    var sectionHeaderRegex = /<h3><span class="mw-headline".*?>(.*?)<\/span>/g;
+                    var sectionHeaderMatch;
+                    console.log("before do");
+                    do {
+                        sectionHeaderMatch = sectionHeaderRegex.exec( html );
+                        console.log(sectionHeaderMatch);
+                        if( sectionHeaderMatch ) {
+                            var headerText = sectionHeaderMatch[1];
+                            console.log(headerText);
+                            var monthYearRegex = /(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?)\D?20\d{2}/;
+                            if( monthYearRegex.test( headerText ) ) {
+                                firstDateSectionIndex = sectionHeaderMatch.index;
+                                break;
+                            }
+                        }
+                    } while( sectionHeaderMatch );
+
+                    if( firstDateSectionIndex < 0 ) {
+                        return { raw: "missing", formatted: "error" };
+                    }
+
+                    html = html.substr( firstDateSectionIndex );
+
+                    var total = 0;
+                    var redlinks = 0;
+                    var linkRegex = /<li><a href="[^"]*?" (class="new")?.*?>(.*?)<\/a>/g;
+                    do {
+                        var linkMatch = linkRegex.exec( html );
+                        if( linkMatch ) {
+                            console.log(linkMatch[0],!!linkMatch[1]);
+                            total++;
+                            if( linkMatch[ 1 ] ) {
+                                redlinks++;
+                            }
+                        }
+                    } while( linkMatch );
+
+                    console.log(redlinks,total);
+
+                    var redLinkFraction = redlinks / total;
+
+                    return { raw: redLinkFraction, formatted: ( redLinkFraction * 100 ).toFixed( 1 ) + "% redlinks" };
+                } else {
+                    return { raw: "missing", formatted: "missing" };
+                }
+            },
+            delta: function ( metric ) {
+                if( typeof metric === typeof 1 ) {
+                    var rawDelta;
+                    if( metric >= .8 ) {
+                        rawDelta = ( metric - .8 ) * 500;
+                    } else if( metric >= .5 ) {
+                        rawDelta = ( metric - .8 ) * 333.3333;
+                    } else {
+                        rawDelta = -100;
+                    }
+                    return CSD_LOG_MULTIPLIER * rawDelta;
+                } else {
+                    return 0;
+                }
             }
         }
     };
