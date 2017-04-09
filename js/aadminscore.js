@@ -235,13 +235,10 @@ $( document ).ready( function () {
                     var firstDateSectionIndex = -1;
                     var sectionHeaderRegex = /<h3><span class="mw-headline".*?>(.*?)<\/span>/g;
                     var sectionHeaderMatch;
-                    console.log("before do");
                     do {
                         sectionHeaderMatch = sectionHeaderRegex.exec( html );
-                        console.log(sectionHeaderMatch);
                         if( sectionHeaderMatch ) {
                             var headerText = sectionHeaderMatch[1];
-                            console.log(headerText);
                             var monthYearRegex = /(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?)\D?20\d{2}/;
                             if( monthYearRegex.test( headerText ) ) {
                                 firstDateSectionIndex = sectionHeaderMatch.index;
@@ -262,7 +259,6 @@ $( document ).ready( function () {
                     do {
                         var linkMatch = linkRegex.exec( html );
                         if( linkMatch ) {
-                            console.log(linkMatch[0],!!linkMatch[1]);
                             total++;
                             if( linkMatch[ 1 ] ) {
                                 redlinks++;
@@ -270,11 +266,15 @@ $( document ).ready( function () {
                         }
                     } while( linkMatch );
 
-                    console.log(redlinks,total);
-
                     var redLinkFraction = redlinks / total;
 
-                    return { raw: redLinkFraction, formatted: ( redLinkFraction * 100 ).toFixed( 1 ) + "% redlinks" };
+                    var redLinkPercentage = redLinkFraction * 100;
+                    var formattedMetric = redLinkPercentage.toFixed( 1 ) +
+                        "% redlinks (" + numberWithCommas( redlinks ) +
+                        " redlinks out of " + numberWithCommas( total ) +
+                        " logged)";
+
+                    return { raw: redLinkFraction, formatted: formattedMetric };
                 } else {
                     return { raw: "missing", formatted: "missing" };
                 }
@@ -332,13 +332,14 @@ $( document ).ready( function () {
                 var delta = functions.delta( metric.raw );
                 if ( name !== "Block status" || delta !== 0 ) {
 
-                    // The d3 graph reads these attributes, so add them
+                    // Add attributes for the d3 graph
                     componentRow
                         .attr( "delta", delta )
                         .attr( "name", name )
                         .addClass( "score_component" );
 
-                    componentRow.empty()
+                    componentRow
+                        .empty()
                         .append( "<td>" + name + "</td><td>" +
                                  metric.formatted + "</td><td>" +
                                  formatDelta( delta ).prop( "outerHTML" ) +
