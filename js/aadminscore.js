@@ -36,7 +36,6 @@ $( document ).ready( function () {
             metric: function ( statusData, pastData ) {
                 statusData = statusData[ 0 ]; // because $.when does funky stuff
                 pastData = pastData[ 0 ];
-                var hasentry = statusData.query.users[ 0 ].hasOwnProperty( "blockexpiry" );
                 if ( statusData.query.users[ 0 ].hasOwnProperty( "blockexpiry" ) ) {
                     var duration = statusData.query.users[ 0 ].blockexpiry;
                     return {
@@ -364,7 +363,7 @@ $( document ).ready( function () {
             if ( urls.length == 1 ) {
                 if ( functions.hasOwnProperty( "usesListLength" ) ) {
                     var runningTotal = 0,
-                        baseUrl = urls[ 0 ].replace( /continue=/, "" );
+                        baseUrl = urls[ 0 ].replace( /continue=/, "" ),
                         query = function ( continueData ) {
                             var queryUrl = baseUrl + continueData;
                             $.getJSON( queryUrl, function ( data ) {
@@ -454,7 +453,7 @@ $( document ).ready( function () {
             spacePaddingTakesUp = ( ( runningTotals.length - 1 ) *
                                     MAIN_GRAPH_BAR_PADDING ),
             spaceBarsTakeUp = runningTotals.length * bar_height,
-            preferredHeight = spacePaddingTakesUp + spaceBarsTakeUp;
+            preferredHeight = spacePaddingTakesUp + spaceBarsTakeUp,
             height = Math.min( MAX_MAIN_GRAPH_HEIGHT, preferredHeight );
 
         var xExtent = d3.extent( runningTotals,
@@ -483,8 +482,7 @@ $( document ).ready( function () {
 
         svg.selectAll( "*" ).remove();
 
-        var nextX = MAIN_GRAPH_WIDTH / 2,
-            dToX = function ( d, i, xOff ) {
+        var dToX = function ( d, i, xOff ) {
                 xOff = xOff || 0;
                 if ( i === 0 ) {
                     return Math.min( d[ 0 ], xScale( 0 ) ) + xOff;
@@ -511,7 +509,7 @@ $( document ).ready( function () {
                 return i * bar_height;
             } )
             .attr( "width", dToWidth )
-            .attr( "height", function ( d, i ) {
+            .attr( "height", function () {
                 return bar_height - MAIN_GRAPH_BAR_PADDING;
             } )
             .attr( "class", function ( d, i ) {
