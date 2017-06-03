@@ -16,8 +16,13 @@ $( document ).ready( function () {
                 return [ API_ROOT + "?action=query&list=users&usprop=editcount&ususers=User:" + username + API_SUFFIX ];
             },
             metric: function ( data ) {
-                var count = data.query.users[ 0 ].editcount;
-                return { raw: count, formatted: numberWithCommas( count ) };
+                var userObject = data.query.users[ 0 ];
+                var count = userObject.editcount;
+                var url = "https://tools.wmflabs.org/supercount/index.php" +
+                    "?user=" + userObject.name + "&project=en.wikipedia.org";
+                var formattedMetric = "<a href='" + url + "'>" +
+                    numberWithCommas( count ) + "</a>";
+                return { raw: count, formatted: formattedMetric };
             },
             delta: function ( edits ) {
                 if ( edits < 350 ) {
@@ -46,14 +51,27 @@ $( document ).ready( function () {
                     };
                 } else {
                     var blockCount = pastData.query.logevents.length;
+                    var url = "https://en.wikipedia.org/w/index.php?" +
+                        "title=Special:Log/block&page=User:" +
+                        statusData.query.users[ 0 ].name;
+                    var formattedPrefix = "<a href='" + url + "'>";
                     if ( blockCount === 0 ) {
-                        return { raw: { count: 0, since: NaN }, formatted: "never blocked" };
-                    } else {
-                        var sinceLast = ( Date.now() - Date.parse( pastData.query.logevents[ 0 ].timestamp ) ) / MILLISECONDS_IN_DAY;
                         return {
-                            raw: { count: blockCount, since: sinceLast },
-                            formatted: blockCount + " block" + ( blockCount == 1 ? "" : "s" ) +
-                                " (last one was " + numberWithCommas( sinceLast.toFixed( 1 ) ) + " days ago)"
+                            raw: { count: 0, since: NaN },
+                            formatted: formattedPrefix +
+                                "never blocked</a>"
+                        };
+                    } else {
+                        var lastTime = pastData.query.logevents[ 0 ].timestamp;
+                        var days = ( Date.now() - Date.parse( lastTime ) )
+                            / MILLISECONDS_IN_DAY;
+                        var formattedMetric = blockCount + " block" +
+                            ( blockCount == 1 ? "" : "s" ) + " (last one was " +
+                            numberWithCommas( days.toFixed( 1 ) ) + " days ago)";
+                        return {
+                            raw: { count: blockCount, since: days },
+                            formatted: formattedPrefix + formattedMetric +
+                                "</a>"
                         };
                     }
                 }
@@ -134,21 +152,25 @@ $( document ).ready( function () {
                     },
                     groups = $.grep( data.query.users[ 0 ].groups,
                                      goodGroup );
+                var formattedMetric = "<a href='https://en.wikipedia.org/wiki" +
+                    "/Special:ListUsers?username=" +
+                    data.query.users[ 0 ].name + "&limit=1'>";
                 if ( groups.length === 0 ) {
-                    return { raw: groups, formatted: "none" };
+                    formattedMetric = "none";
                 } else if ( groups.length === 1 ) {
-                    return { raw: groups, formatted: groups[ 0 ] };
+                    formattedMetric = groups[ 0 ];
                 } else if ( groups.length === 2 ) {
-                    return { raw: groups,
-                             formatted: groups[ 0 ] + " and " + groups[ 1 ] };
+                    formattedMetric = groups[ 0 ] + " and " + groups[ 1 ];
                 } else {
-                    var formattedMetric = groups[ 0 ];
+                    formattedMetric += groups[ 0 ];
                     for ( var i = 1; i < groups.length - 1; i++ ) {
                         formattedMetric += ", " + groups[ i ];
                     }
                     formattedMetric += ", and " + groups[ groups.length - 1 ];
-                    return { raw: groups, formatted: formattedMetric };
                 }
+                formattedMetric += "</a>";
+                return { raw: groups, formatted: formattedMetric };
+
             },
             delta: function ( groups ) {
                 var score = 0;
@@ -182,9 +204,14 @@ $( document ).ready( function () {
             getList: function ( data ) {
                 return data.query.usercontribs;
             },
-            metric: function ( count ) {
+            metric: function ( count, username ) {
+                var toolLink = "http://tools.wmflabs.org/xtools/pages/?user=" +
+                    username + "&project=en.wikipedia.org&namespace=0";
+                var formattedMetric = "<a href='" + toolLink + "'>" +
+                    numberWithCommas( count ) + " article-space pages created" +
+                    "</a>";
                 return { raw: count,
-                         formatted: count + " article-space pages created" };
+                         formatted: formattedMetric };
             },
             delta: function ( metric ) {
                 var rawDelta = 36.07161 * Math.log( metric ) - 68.8246;
@@ -268,10 +295,18 @@ $( document ).ready( function () {
                     var redLinkFraction = redlinks / total;
 
                     var redLinkPercentage = redLinkFraction * 100;
+                    var formattedNumLogged = numberWithCommas( total ) + " logged";
+                    var username = /User:([^\/]+)\//.exec( data.parse.title );
+                    if( username ) {
+
+                        // Make "_ logged" a link to this user's CSD log
+                        var url = "https://en.wikipedia.org/wiki/" + data.parse.title;
+                        formattedNumLogged = "<a href='" + url + "'>" +
+                            formattedNumLogged + "</a>";
+                    }
                     var formattedMetric = redLinkPercentage.toFixed( 1 ) +
                         "% redlinks (" + numberWithCommas( redlinks ) +
-                        " redlinks out of " + numberWithCommas( total ) +
-                        " logged)";
+                        " redlinks out of " + formattedNumLogged + ")";
 
                     return { raw: redLinkFraction, formatted: formattedMetric };
                 } else {
@@ -379,7 +414,8 @@ $( document ).ready( function () {
                                 } else {
 
                                     // Nothing else, so we're done
-                                    display( functions.metric( runningTotal ) );
+                                    display( functions.metric( runningTotal,
+                                        username ) );
                                 }
                             } );
                         };
